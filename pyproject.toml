@@ -1,0 +1,13 @@
+
+[project]
+name = "advent-talk"
+version = "0.1.0"
+description = "Demo for Advent of Code Talk at PuPPy"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+	"icecream", "parse", "pytest", "watchfiles"
+
+]
+
+
