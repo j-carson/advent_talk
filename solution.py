@@ -1,48 +1,109 @@
+# A buggy solution to 2016, Day 1
 from pathlib import Path
-import sys
 
 from icecream import ic
-import parse as p
 import pytest
-
-SAMPLE_INPUT = Path("input-sample.txt").read_text().strip()
-SAMPLE_SOLUTION = 0
+from typing import NamedTuple
 
 MY_INPUT = Path("input.txt").read_text().strip()
 
 # --> Puzzle solution
 
 
+class Instruction(NamedTuple):
+    turn: str
+    blocks: int
+
+    @classmethod
+    def fromstr(cls, ins):
+        turn = ins[0]
+        blocks = int(ins[1:])
+        result = cls(turn, blocks)
+        return result
+
+
+MOVES = {
+    "^": (-1, 0),
+    "v": (1, 0),
+    "<": (0, -1),
+    ">": (0, 1),
+}
+
+RIGHT_TURNS = {
+    "^": ">",
+    "v": "<",
+    "<": "^",
+    ">": "v",
+}
+
+LEFT_TURNS = {
+    "^": "<",
+    "v": ">",
+    "<": "v",
+    ">": "^",
+}
+
+
+class Cursor(NamedTuple):
+    location: tuple[int, int]
+    facing: str
+
+    def move(self, instruction):
+        if instruction.turn == "L":
+            new_direction = LEFT_TURNS[self.facing]
+        else:
+            new_direction = RIGHT_TURNS[self.facing]
+
+        new_location = (
+            self.location[0] + MOVES[new_direction][1],
+            self.location[1] + MOVES[new_direction][1],
+        )
+        return Cursor(new_location, new_direction)
+
+
 def solve(input_data):
-    ic(input_data)
-    return 0
+    steps = [Instruction.fromstr(k) for k in input_data.strip().split(",")]
+    cursor = Cursor((0, 0), "^")
+    for step in steps:
+        cursor = cursor.move(step)
+    return sum(cursor.location)
 
 
 # --> Tests
 
 
-def test_something():
-    # Pretend the test failed
-    raise Exception("oops")
+TESTS = [
+    ("R2, L3", 5),
+]
 
 
-def test_example():
-    assert solve(SAMPLE_INPUT) == SAMPLE_SOLUTION
+@pytest.mark.parametrize("test_input,result", TESTS)
+def test_example(test_input, result):
+    assert solve(test_input) == result
 
 
 # --> Driver
 
-if __name__ == "__main__":
+
+def main():
     #  Run the test examples with icecream debug-trace turned on
     ic.enable()
-    ex = pytest.main([__file__, "--capture=tee-sys", "-v"])
+    ex = pytest.main(
+        [
+            __file__,
+            "--capture=tee-sys",
+            "-v",
+        ]
+    )
     if ex not in {pytest.ExitCode.OK, pytest.ExitCode.NO_TESTS_COLLECTED}:
         print(f"tests FAILED ({ex})")
-        sys.exit(1)
+        return
     else:
         print("tests PASSED")
 
-    #  Actual input data generally has more iterations, turn off ic
     ic.disable()
-    result = solve(my_input)
-    print(result)
+    print(solve(MY_INPUT))
+
+
+if __name__ == "__main__":
+    main()
