@@ -4,6 +4,7 @@ from pathlib import Path
 from icecream import ic
 import pytest
 from typing import NamedTuple
+import parse as p
 
 MY_INPUT = Path("input.txt").read_text().strip()
 
@@ -16,8 +17,7 @@ class Instruction(NamedTuple):
 
     @classmethod
     def fromstr(cls, ins):
-        turn = ins[0]
-        blocks = int(ins[1:])
+        turn,blocks = p.parse("{:l}{:d}", ins)
         result = cls(turn, blocks)
         return result
 
